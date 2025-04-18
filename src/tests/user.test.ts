@@ -11,7 +11,6 @@ describe('User API', () => {
   let authToken: string;
 
   beforeAll(async () => {
-    // Créer un utilisateur admin pour les tests
     const adminData = {
       username: 'admin',
       email: 'admin@test.com',
