@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { userController } from '../controllers/userController';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -33,6 +34,11 @@ const router = Router();
  *         updatedAt:
  *           type: string
  *           format: date-time
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  */
 
 /**
@@ -41,6 +47,8 @@ const router = Router();
  *   get:
  *     summary: Récupère tous les utilisateurs
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Liste des utilisateurs
@@ -50,8 +58,10 @@ const router = Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Non autorisé
  */
-router.get('/', userController.getAllUsers);
+router.get('/', authenticateToken, userController.getAllUsers);
 
 /**
  * @swagger
@@ -59,6 +69,8 @@ router.get('/', userController.getAllUsers);
  *   get:
  *     summary: Récupère un utilisateur par son ID
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -73,10 +85,12 @@ router.get('/', userController.getAllUsers);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Non autorisé
  *       404:
  *         description: Utilisateur non trouvé
  */
-router.get('/:id', userController.getUserById);
+router.get('/:id', authenticateToken, userController.getUserById);
 
 /**
  * @swagger
@@ -84,6 +98,8 @@ router.get('/:id', userController.getUserById);
  *   post:
  *     summary: Crée un nouvel utilisateur
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -95,8 +111,10 @@ router.get('/:id', userController.getUserById);
  *         description: Utilisateur créé avec succès
  *       400:
  *         description: Données invalides
+ *       401:
+ *         description: Non autorisé
  */
-router.post('/', userController.createUser);
+router.post('/', authenticateToken, userController.createUser);
 
 /**
  * @swagger
@@ -104,6 +122,8 @@ router.post('/', userController.createUser);
  *   put:
  *     summary: Met à jour un utilisateur
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -125,10 +145,12 @@ router.post('/', userController.createUser);
  *     responses:
  *       200:
  *         description: Utilisateur mis à jour
+ *       401:
+ *         description: Non autorisé
  *       404:
  *         description: Utilisateur non trouvé
  */
-router.put('/:id', userController.updateUser);
+router.put('/:id', authenticateToken, userController.updateUser);
 
 /**
  * @swagger
@@ -136,6 +158,8 @@ router.put('/:id', userController.updateUser);
  *   delete:
  *     summary: Supprime un utilisateur
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -146,9 +170,11 @@ router.put('/:id', userController.updateUser);
  *     responses:
  *       204:
  *         description: Utilisateur supprimé
+ *       401:
+ *         description: Non autorisé
  *       404:
  *         description: Utilisateur non trouvé
  */
-router.delete('/:id', userController.deleteUser);
+router.delete('/:id', authenticateToken, userController.deleteUser);
 
 export default router; 

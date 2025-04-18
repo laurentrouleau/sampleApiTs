@@ -1,79 +1,122 @@
-import * as express from 'express';
-import { User } from '../models/User';
+import { Request, Response } from 'express';
+import { userService, User } from '../services/userService';
+
+// Interface temporaire pour l'implémentation en mémoire
+interface TempUser {
+  id: number;
+  username: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Simulated database
-let users: User[] = [];
+let users: TempUser[] = [];
 let nextId = 1;
 
 export const userController = {
   // Get all users
-  getAllUsers: (req: express.Request, res: express.Response) => {
-    res.json(users);
+  getAllUsers: async (req: Request, res: Response) => {
+    try {
+      const users = await userService.getAllUsers();
+      // Ne pas renvoyer les mots de passe
+      const safeUsers = users.map(user => {
+        const { password, ...safeUser } = user;
+        return safeUser;
+      });
+      res.json(safeUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Error fetching users' });
+    }
   },
 
   // Get user by id
-  getUserById: (req: express.Request, res: express.Response) => {
-    const id = parseInt(req.params.id);
-    const user = users.find(u => u.id === id);
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+  getUserById: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await userService.getUserById(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Ne pas renvoyer le mot de passe
+      const { password, ...safeUser } = user;
+      res.json(safeUser);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Error fetching user' });
     }
-    
-    res.json(user);
   },
 
   // Create new user
-  createUser: (req: express.Request, res: express.Response) => {
-    const { username, email, password } = req.body;
-    
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+  createUser: async (req: Request, res: Response) => {
+    try {
+      const { username, email, password, firstName, lastName } = req.body;
+      
+      if (!username || !email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+
+      const newUser = await userService.createUser({
+        username,
+        email,
+        password,
+        firstName,
+        lastName
+      });
+
+      // Ne pas renvoyer le mot de passe
+      const { password: _, ...safeUser } = newUser;
+      res.status(201).json(safeUser);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      res.status(500).json({ message: 'Error creating user' });
     }
-
-    const newUser: User = {
-      id: nextId++,
-      username,
-      email,
-      password, // Note: In a real application, you should hash the password
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    users.push(newUser);
-    res.status(201).json(newUser);
   },
 
   // Update user
-  updateUser: (req: express.Request, res: express.Response) => {
-    const id = parseInt(req.params.id);
-    const { username, email } = req.body;
-    
-    const userIndex = users.findIndex(u => u.id === id);
-    if (userIndex === -1) {
-      return res.status(404).json({ message: 'User not found' });
+  updateUser: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { username, email, firstName, lastName } = req.body;
+      
+      const updatedUser = await userService.updateUser(id, {
+        username,
+        email,
+        firstName,
+        lastName
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Ne pas renvoyer le mot de passe
+      const { password, ...safeUser } = updatedUser;
+      res.json(safeUser);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ message: 'Error updating user' });
     }
-
-    users[userIndex] = {
-      ...users[userIndex],
-      username: username || users[userIndex].username,
-      email: email || users[userIndex].email,
-      updatedAt: new Date()
-    };
-
-    res.json(users[userIndex]);
   },
 
   // Delete user
-  deleteUser: (req: express.Request, res: express.Response) => {
-    const id = parseInt(req.params.id);
-    const userIndex = users.findIndex(u => u.id === id);
-    
-    if (userIndex === -1) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+  deleteUser: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await userService.deleteUser(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: 'User not found' });
+      }
 
-    users = users.filter(u => u.id !== id);
-    res.status(204).send();
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ message: 'Error deleting user' });
+    }
   }
 }; 

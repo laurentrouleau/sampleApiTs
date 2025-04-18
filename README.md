@@ -41,6 +41,23 @@ Une API RESTful construite avec TypeScript et Express, incluant des tests, du li
 - **Husky** : Outil pour gérer les Git hooks facilement.
 - **lint-staged** : Exécute les linters sur les fichiers modifiés avant le commit.
 
+## Architecture
+
+### Services
+L'application utilise une architecture en couches avec :
+- **Services** : Logique métier et gestion des données
+  - `userService` : Gestion des utilisateurs avec stockage en mémoire
+  - `authService` : Gestion de l'authentification et des tokens JWT
+- **Controllers** : Gestion des requêtes HTTP
+- **Routes** : Définition des endpoints de l'API
+- **Middleware** : Fonctions intermédiaires (auth, validation, etc.)
+
+### Stockage des Données
+Pour simplifier le développement et les tests, l'application utilise :
+- Stockage en mémoire avec structure de données TypeScript
+- Un utilisateur admin par défaut préchargé
+- Pas de persistance des données (les données sont réinitialisées au redémarrage)
+
 ## Scripts Disponibles
 
 - `npm run dev` : Lance le serveur en mode développement avec rechargement automatique
@@ -55,11 +72,12 @@ Une API RESTful construite avec TypeScript et Express, incluant des tests, du li
 ```
 src/
   ├── config/        # Configuration (Swagger, etc.)
-  ├── controllers/   # Logique métier
-  ├── models/        # Interfaces et types
-  ├── routes/        # Définition des routes
-  ├── tests/         # Tests unitaires et d'intégration
-  └── index.ts       # Point d'entrée de l'application
+  ├── controllers/   # Contrôleurs HTTP
+  ├── services/     # Services métier
+  ├── routes/       # Définition des routes
+  ├── middleware/   # Middleware personnalisé
+  ├── data/        # Données en mémoire
+  └── index.ts     # Point d'entrée de l'application
 ```
 
 ## Installation
@@ -88,39 +106,67 @@ Cette interface interactive permet de :
 - Tester les endpoints directement depuis le navigateur
 - Consulter les codes de réponse et leurs descriptions
 
+## Sécurisation de l'API
+
+L'API implémente plusieurs mécanismes de sécurité :
+
+### Authentification JWT
+- Utilisation de JSON Web Tokens (JWT) pour l'authentification
+- Deux types de tokens :
+  - Access Token (durée de vie : 15 minutes)
+  - Refresh Token (durée de vie : 7 jours)
+- Stockage sécurisé des tokens avec révocation possible
+
+### Protection des Routes
+- Middleware d'authentification pour protéger les routes sensibles
+- Validation des tokens à chaque requête
+- Gestion des erreurs d'authentification
+
+### Sécurité des Données
+- Hachage des mots de passe avec bcrypt
+- Validation des données entrantes avec express-validator
+- Protection contre les attaques courantes (XSS, CSRF) via Helmet
+- Gestion du CORS pour contrôler l'accès à l'API
+
 ## API Endpoints
 
+### Authentication
+- `POST /api/auth/register` : Créer un nouveau compte
+- `POST /api/auth/login` : Se connecter et obtenir un token
+- `POST /api/auth/refresh` : Rafraîchir un token d'accès
+- `POST /api/auth/logout` : Se déconnecter (révoquer un token)
+
 ### Users
-- `GET /api/users` : Récupérer tous les utilisateurs
-- `GET /api/users/:id` : Récupérer un utilisateur par ID
-- `POST /api/users` : Créer un nouvel utilisateur
-- `PUT /api/users/:id` : Mettre à jour un utilisateur
-- `DELETE /api/users/:id` : Supprimer un utilisateur
+- `GET /api/users` : Récupérer tous les utilisateurs (protégé)
+- `GET /api/users/:id` : Récupérer un utilisateur par ID (protégé)
+- `POST /api/users` : Créer un nouvel utilisateur (protégé)
+- `PUT /api/users/:id` : Mettre à jour un utilisateur (protégé)
+- `DELETE /api/users/:id` : Supprimer un utilisateur (protégé)
 
 ## Exemples d'Utilisation
 
-### Créer un utilisateur
+### Authentification
 ```bash
-curl -X POST http://localhost:3000/api/users \
+# Créer un compte
+curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "testuser",
-    "email": "test@example.com",
+    "email": "admin@example.com",
+    "password": "password123",
+    "firstName": "John",
+    "lastName": "Doe",
+    "username": "johndoe"
+  }'
+
+# Se connecter (utilisateur admin par défaut)
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
     "password": "password123"
   }'
-```
 
-### Récupérer tous les utilisateurs
-```bash
-curl http://localhost:3000/api/users
-```
-
-### Mettre à jour un utilisateur
-```bash
-curl -X PUT http://localhost:3000/api/users/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "updateduser",
-    "email": "updated@example.com"
-  }'
+# Accéder à une route protégée
+curl -X GET http://localhost:3000/api/users \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ``` 
