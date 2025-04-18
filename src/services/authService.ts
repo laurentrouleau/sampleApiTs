@@ -69,8 +69,8 @@ export class AuthService {
       logger.info(`Connexion réussie pour l'utilisateur: ${email}`);
 
       // Ne pas renvoyer le mot de passe dans la réponse
-      const { password: _, ...safeUser } = user;
-      return { user: safeUser, token };
+      //const { password: _, ...safeUser } = user;
+      return { user: user, token };
     } catch (error) {
       logger.error(`Erreur lors de la connexion: ${error instanceof Error ? error.message : 'Unknown error'}`, { error });
       throw error;
