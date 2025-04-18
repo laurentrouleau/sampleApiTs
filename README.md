@@ -9,6 +9,11 @@ Une API RESTful construite avec TypeScript et Express, incluant des tests, du li
 - **Express** : Framework web minimaliste et flexible pour Node.js, facilitant la création d'applications web et d'APIs.
 - **Node.js** : Environnement d'exécution JavaScript basé sur le moteur V8 de Chrome.
 
+### Documentation API
+- **Swagger/OpenAPI** : Standard pour la documentation d'API RESTful, permettant de décrire, produire, consommer et visualiser des services web RESTful.
+- **swagger-ui-express** : Middleware pour servir la documentation Swagger UI.
+- **swagger-jsdoc** : Génère la documentation Swagger à partir des commentaires JSDoc.
+
 ### Sécurité
 - **Helmet** : Middleware de sécurité qui aide à protéger l'application en définissant divers en-têtes HTTP.
 - **CORS** : Middleware pour gérer le Cross-Origin Resource Sharing, permettant ou restreignant l'accès à l'API depuis différents domaines.
@@ -49,7 +54,8 @@ Une API RESTful construite avec TypeScript et Express, incluant des tests, du li
 
 ```
 src/
-  ├── controllers/    # Logique métier
+  ├── config/        # Configuration (Swagger, etc.)
+  ├── controllers/   # Logique métier
   ├── models/        # Interfaces et types
   ├── routes/        # Définition des routes
   ├── tests/         # Tests unitaires et d'intégration
@@ -69,6 +75,19 @@ npm run dev
 npm test
 ```
 
+## Documentation de l'API
+
+La documentation de l'API est disponible via Swagger UI à l'adresse :
+```
+http://localhost:3000/api-docs
+```
+
+Cette interface interactive permet de :
+- Visualiser tous les endpoints disponibles
+- Voir les schémas de données attendus
+- Tester les endpoints directement depuis le navigateur
+- Consulter les codes de réponse et leurs descriptions
+
 ## API Endpoints
 
 ### Users
@@ -76,4 +95,32 @@ npm test
 - `GET /api/users/:id` : Récupérer un utilisateur par ID
 - `POST /api/users` : Créer un nouvel utilisateur
 - `PUT /api/users/:id` : Mettre à jour un utilisateur
-- `DELETE /api/users/:id` : Supprimer un utilisateur 
+- `DELETE /api/users/:id` : Supprimer un utilisateur
+
+## Exemples d'Utilisation
+
+### Créer un utilisateur
+```bash
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+```
+
+### Récupérer tous les utilisateurs
+```bash
+curl http://localhost:3000/api/users
+```
+
+### Mettre à jour un utilisateur
+```bash
+curl -X PUT http://localhost:3000/api/users/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "updateduser",
+    "email": "updated@example.com"
+  }'
+``` 

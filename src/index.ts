@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 import userRoutes from './routes/userRoutes';
 
 const app = express();
@@ -10,6 +12,9 @@ const port = process.env.PORT || 3000;
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Documentation API
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -22,4 +27,5 @@ app.get('/health', (req, res) => {
 // Start server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`API Documentation available at http://localhost:${port}/api-docs`);
 }); 
