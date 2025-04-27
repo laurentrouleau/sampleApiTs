@@ -12,8 +12,8 @@ interface TempUser {
 }
 
 // Simulated database
-let users: TempUser[] = [];
-let nextId = 1;
+const users: TempUser[] = [];
+const nextId = 1;
 
 export const userController = {
   // Get all users
