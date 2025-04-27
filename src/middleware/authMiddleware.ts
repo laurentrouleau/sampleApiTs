@@ -6,11 +6,12 @@ import logger from '../config/logger';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Interface pour étendre Request avec les informations d'utilisateur
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: {
     id: number;
     username: string;
     email: string;
+    role: string;
   };
 }
 
@@ -36,6 +37,7 @@ export const authenticateToken = (
       id: number;
       username: string;
       email: string;
+      role: string;
     };
     req.user = decoded;
     logger.debug(`Token vérifié avec succès pour l'utilisateur: ${decoded.email}`);
@@ -43,5 +45,21 @@ export const authenticateToken = (
   } catch (error) {
     logger.warn(`Token invalide ou expiré: ${error instanceof Error ? error.message : 'Unknown error'}`);
     res.status(403).json({ message: 'Token invalide ou expiré' });
+  }
+};
+
+/**
+ * Middleware pour vérifier si l'utilisateur est admin
+ */
+export const isAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (req.user?.email === 'admin@example.com') {
+    next();
+  } else {
+    logger.warn(`Tentative d'accès admin par un utilisateur non autorisé: ${req.user?.email}`);
+    res.status(403).json({ message: 'Accès non autorisé' });
   }
 }; 

@@ -9,18 +9,16 @@ import authRoutes from './routes/authRoutes';
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Documentation API
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
+
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
-
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });

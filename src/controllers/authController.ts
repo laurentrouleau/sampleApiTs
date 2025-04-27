@@ -51,7 +51,17 @@ export const login = async (req: Request, res: Response) => {
       console.log('Appel de authService.login avec:', { email, password });
       const result = await authService.login(email, password);
       console.log('Résultat de la connexion:', result);
-      res.json(result);
+
+      // Renvoyer le token dans la réponse
+      res.json({
+        user: {
+          id: result.user.id,
+          username: result.user.username,
+          email: result.user.email,
+          role: result.user.role
+        },
+        token: result.token
+      });
     } catch (error: any) {
       console.log('Erreur lors de la connexion:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid password') {
@@ -106,16 +116,8 @@ export const authController = {
    * Déconnexion (révoquer un refresh token)
    */
   logout: (req: Request, res: Response): void => {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      res.status(400).json({ message: 'Refresh token manquant' });
-      return;
-    }
-
-    // Révoquer le refresh token
-    authService.revokeRefreshToken(refreshToken);
-
+    // Pour une API, la déconnexion est gérée côté client
+    // Le client doit simplement supprimer le token stocké
     res.status(204).send();
   }
 }; 
